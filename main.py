@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
 from sklearn.metrics import classification_report
 
 
@@ -33,8 +34,6 @@ plt.ylabel("Count")
 plt.xticks(class_distribution.index, ['0','1'])
 #plt.show()
 
-feature = dataFrame.drop(columns=['label'])
-target = dataFrame.label
 
 train_df, temp_df = train_test_split(dataFrame, test_size=0.30, random_state=42, stratify=dataFrame["label"])
 
@@ -57,5 +56,8 @@ y_test = test_df["label"]
 #model = RandomForestClassifier(random_state=42)
 #model.fit(X_train, x_train)
 
-#predictions = model.predict(X_val)
-#print(classification_report(x_val, predictions))
+model = svm.SVC(kernel="linear")
+model.fit(X_train, x_train)
+
+predictions = model.predict(X_val)
+print(classification_report(x_val, predictions))
