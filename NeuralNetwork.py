@@ -59,12 +59,11 @@ y_test = test_df["label"]
 
 train_data_tensor = torch.tensor(X_train[["ip_mean", "ip_std", "ip_kurtosis", "ip_skewness",
     "dm_mean", "dm_std", "dm_kurtosis", "dm_skewness",]].values.astype(np.float32))
-train_target_tensor = torch.tensor(x_train[["label"]].values)
-
+train_target_tensor = torch.tensor(x_train.values, dtype=torch.long)
 
 test_data_tensor = torch.tensor(X_val[["ip_mean", "ip_std", "ip_kurtosis", "ip_skewness",
     "dm_mean", "dm_std", "dm_kurtosis", "dm_skewness",]].values.astype(np.float32))
-test_target_tensor = torch.tensor(x_val[["label"]].values)
+test_target_tensor = torch.tensor(x_val.values, dtype=torch.long)
 
 train_dataset = torch.utils.data.TensorDataset(train_data_tensor, train_target_tensor)
 test_dataset = torch.utils.data.TensorDataset(test_data_tensor, test_target_tensor)
@@ -79,7 +78,7 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.dropout = nn.Dropout(0.5)
 
-        self.linear1 = nn.Linear(3, 128)
+        self.linear1 = nn.Linear(8, 128)
         self.linear2 = nn.Linear(128, 256)
         self.linear3 = nn.Linear(256, 128)
         self.linear4 = nn.Linear(128, 64)
@@ -98,7 +97,7 @@ class Net(nn.Module):
         x = self.linear4(x)
         x = F.relu(x)
         x = self.dropout(x)
-        x = self.linear4(x)
+        x = self.linear5(x)
 
         output = F.log_softmax(x, dim=1)
         return output
@@ -140,13 +139,34 @@ def test(model, device, test_loader):
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
-    epochs = 10
-    model = Net().to(device)
-    optimizer = optim.AdamW(model.parameters())
-    scheduler = StepLR(optimizer, step_size=1)
-    for epoch in range(1, epochs + 1):
-        train(model, device, train_loader, optimizer, epoch)
-        test(model, device, test_loader)
-        scheduler.step()
+# Training loop should be HERE, not inside test()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
+epochs = 10
+model = Net().to(device)
+optimizer = optim.AdamW(model.parameters())
+scheduler = StepLR(optimizer, step_size=1)
 
+for epoch in range(1, epochs + 1):
+    train(model, device, train_loader, optimizer, epoch)
+    test(model, device, test_loader)
+    scheduler.step()
+
+# Final test evaluation
+print("\n" + "="*50)
+print("FINAL TEST SET EVALUATION:")
+print("="*50)
+
+final_test_data_tensor = torch.tensor(Y_test[["ip_mean", "ip_std", "ip_kurtosis", "ip_skewness",
+    "dm_mean", "dm_std", "dm_kurtosis", "dm_skewness"]].values.astype(np.float32))
+final_test_target_tensor = torch.tensor(y_test.values, dtype=torch.long)
+
+final_test_dataset = torch.utils.data.TensorDataset(final_test_data_tensor, final_test_target_tensor)
+final_test_loader = torch.utils.data.DataLoader(final_test_dataset, batch_size=batch_size, shuffle=False)
+
+test(model, device, final_test_loader)
+
+torch.save(model.state_dict(), "pulsar_model.pth")
+print("\nModel saved to pulsar_model.pth")
+print("Training complete!")
