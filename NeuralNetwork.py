@@ -2,9 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -139,7 +137,6 @@ def test(model, device, test_loader):
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
-# Training loop should be HERE, not inside test()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
@@ -153,7 +150,6 @@ for epoch in range(1, epochs + 1):
     test(model, device, test_loader)
     scheduler.step()
 
-# Final test evaluation
 print("\n" + "="*50)
 print("FINAL TEST SET EVALUATION:")
 print("="*50)
