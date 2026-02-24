@@ -7,37 +7,18 @@ from sklearn import svm
 from sklearn.metrics import classification_report
 
 
-column_names = [
-    "ip_mean", "ip_std", "ip_kurtosis", "ip_skewness",
-    "dm_mean", "dm_std", "dm_kurtosis", "dm_skewness",
-    "label"
-]
-f = open("htru2/HTRU_2.csv" ,"r")
-dataset = pd.read_csv(f, header=None, names=column_names)
+train_df = pd.read_csv("htru2/train.csv")
+val_df = pd.read_csv("htru2/validation.csv")
+test_df = pd.read_csv("htru2/test.csv")
 
-def clean_dataset(df):
-    assert isinstance(df, pd.DataFrame)
-    df.dropna(inplace=True) # null értékek törlése
-    df = df.select_dtypes(include=[np.number])  #Számértékek megtartása
-    indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(axis=1)
-    return df[indices_to_keep]
-
-dataFrame = clean_dataset(dataset)
-
-#print(dataFrame.head())
 target_column = "label"
-class_distribution = dataFrame[target_column].value_counts()
+class_distribution = train_df[target_column].value_counts()
 
 plt.bar(class_distribution.index, class_distribution)
 plt.xlabel("Class")
 plt.ylabel("Count")
 plt.xticks(class_distribution.index, ['0','1'])
 #plt.show()
-
-
-train_df, temp_df = train_test_split(dataFrame, test_size=0.30, random_state=42, stratify=dataFrame["label"])
-
-val_df, test_df = train_test_split(temp_df, test_size=0.50, random_state=42, stratify=temp_df["label"])
 
 #print("Train méret:", len(train_df))
 #print("Validation méret:", len(val_df))
@@ -53,6 +34,25 @@ Y_test = test_df.drop(columns=["label"], axis=1)
 y_test = test_df["label"]
 
 
+def balanced_accuracy(y_true, y_pred):
+    """Compute balance accuracy using numpy"""
+    # Convert inputs to numpy arrays
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    # Get unique classes
+    classes = np.unique(y_true)
+    
+    # Calculate recall for each class
+    recalls = []
+    for cls in classes:
+        true_positives = np.sum((y_true == cls) & (y_pred == cls))
+        actual_positives = np.sum(y_true == cls)
+        recall = true_positives / actual_positives
+        recalls.append(recall)
+    
+    # Return the arithmetic mean
+    return np.mean(recalls)
+
 #model = RandomForestClassifier(random_state=42)
 #model.fit(X_train, x_train)
 
@@ -61,3 +61,6 @@ model.fit(X_train, x_train)
 
 predictions = model.predict(X_val)
 print(classification_report(x_val, predictions))
+
+b_acc = balanced_accuracy(x_val, predictions)
+print(f"Balanced Accuracy: {b_acc:.4f}")

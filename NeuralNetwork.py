@@ -9,38 +9,18 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 
-column_names = [
-    "ip_mean", "ip_std", "ip_kurtosis", "ip_skewness",
-    "dm_mean", "dm_std", "dm_kurtosis", "dm_skewness",
-    "label"
-]
+train_df = pd.read_csv("htru2/train.csv")
+val_df = pd.read_csv("htru2/validation.csv")
+test_df = pd.read_csv("htru2/test.csv")
 
-f = open("htru2/HTRU_2.csv" ,"r")
-dataset = pd.read_csv(f, header=None, names=column_names)
-
-def clean_dataset(df):
-    assert isinstance(df, pd.DataFrame)
-    df.dropna(inplace=True) # null értékek törlése
-    df = df.select_dtypes(include=[np.number])  #Számértékek megtartása
-    indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(axis=1)
-    return df[indices_to_keep]
-
-dataFrame = clean_dataset(dataset)
-
-#print(dataFrame.head())
 target_column = "label"
-class_distribution = dataFrame[target_column].value_counts()
+class_distribution = train_df[target_column].value_counts()
 
 plt.bar(class_distribution.index, class_distribution)
 plt.xlabel("Class")
 plt.ylabel("Count")
 plt.xticks(class_distribution.index, ['0','1'])
 #plt.show()
-
-
-train_df, temp_df = train_test_split(dataFrame, test_size=0.30, random_state=42, stratify=dataFrame["label"])
-
-val_df, test_df = train_test_split(temp_df, test_size=0.50, random_state=42, stratify=temp_df["label"])
 
 #print("Train méret:", len(train_df))
 #print("Validation méret:", len(val_df))
@@ -76,11 +56,12 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.dropout = nn.Dropout(0.5)
 
-        self.linear1 = nn.Linear(8, 128)
-        self.linear2 = nn.Linear(128, 256)
-        self.linear3 = nn.Linear(256, 128)
-        self.linear4 = nn.Linear(128, 64)
-        self.linear5 = nn.Linear(64, 2)
+        self.linear1 = nn.Linear(8, 256)
+        self.linear2 = nn.Linear(256, 512)
+        self.linear3 = nn.Linear(512, 256)
+        self.linear4 = nn.Linear(256, 128)
+        self.linear5 = nn.Linear(128, 64)
+        self.linear6 = nn.Linear(64, 2)
 
     def forward(self, x):
         x = self.linear1(x)
@@ -96,6 +77,9 @@ class Net(nn.Module):
         x = F.relu(x)
         x = self.dropout(x)
         x = self.linear5(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+        x = self.linear6(x)
 
         output = F.log_softmax(x, dim=1)
         return output
@@ -117,11 +101,33 @@ def train(model, device, train_loader, optimizer, epoch):
                 100. * batch_idx / len(train_loader), loss.item()))
 
 
+def balanced_accuracy(y_true, y_pred):
+    """Compute balance accuracy using numpy"""
+    # Convert inputs to numpy arrays
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    # Get unique classes
+    classes = np.unique(y_true)
+    
+    # Calculate recall for each class
+    recalls = []
+    for cls in classes:
+        true_positives = np.sum((y_true == cls) & (y_pred == cls))
+        actual_positives = np.sum(y_true == cls)
+        recall = true_positives / actual_positives
+        recalls.append(recall)
+    
+    # Return the arithmetic mean
+    return np.mean(recalls)
+
 def test(model, device, test_loader):
     model.eval()
 
     test_loss = 0
     correct = 0
+    
+    all_targets = []
+    all_preds = []
 
     with torch.no_grad():
         for data, target in test_loader:
@@ -130,12 +136,16 @@ def test(model, device, test_loader):
             test_loss += F.nll_loss(output, target, reduction='sum').item()
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
+            
+            all_targets.extend(target.cpu().numpy())
+            all_preds.extend(pred.cpu().numpy().flatten())
 
     test_loss /= len(test_loader.dataset)
+    b_acc = balanced_accuracy(all_targets, all_preds)
 
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%), Balanced Accuracy: {:.4f}\n'.format(
         test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+        100. * correct / len(test_loader.dataset), b_acc))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
