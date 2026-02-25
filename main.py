@@ -36,21 +36,17 @@ y_test = test_df["label"]
 
 def balanced_accuracy(y_true, y_pred):
     """Compute balance accuracy using numpy"""
-    # Convert inputs to numpy arrays
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
-    # Get unique classes
     classes = np.unique(y_true)
     
-    # Calculate recall for each class
     recalls = []
     for cls in classes:
         true_positives = np.sum((y_true == cls) & (y_pred == cls))
         actual_positives = np.sum(y_true == cls)
         recall = true_positives / actual_positives
         recalls.append(recall)
-    
-    # Return the arithmetic mean
+
     return np.mean(recalls)
 
 #model = RandomForestClassifier(random_state=42)

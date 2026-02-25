@@ -5,8 +5,8 @@ import os
 
 def clean_dataset(df):
     assert isinstance(df, pd.DataFrame)
-    df.dropna(inplace=True) # null értékek törlése
-    df = df.select_dtypes(include=[np.number])  # Számértékek megtartása
+    df.dropna(inplace=True) 
+    df = df.select_dtypes(include=[np.number])  
     indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(axis=1)
     return df[indices_to_keep]
 
@@ -25,7 +25,6 @@ def split_dataset():
     train_df, temp_df = train_test_split(dataFrame, test_size=0.30, random_state=42, stratify=dataFrame["label"])
     val_df, test_df = train_test_split(temp_df, test_size=0.50, random_state=42, stratify=temp_df["label"])
     
-    # Mentesés külön fájlokba
     train_file = "htru2/train.csv"
     val_file = "htru2/validation.csv"
     test_file = "htru2/test.csv"
