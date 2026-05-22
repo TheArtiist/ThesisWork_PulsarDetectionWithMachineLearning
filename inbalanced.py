@@ -95,9 +95,9 @@ if __name__ == '__main__':
 
     try:
         train_df = pd.read_csv("htru2/train.csv")
-        test_df = pd.read_csv("htru2/validation.csv")
+        test_df = pd.read_csv("htru2/test.csv")
     except FileNotFoundError:
-        print("Hiba: 'htru2/train.csv' vagy 'htru2/validation.csv' nem található.")
+        print("Hiba: 'htru2/train.csv' vagy 'htru2/test.csv' nem található.")
         exit(1)
 
     target_column = "label"
@@ -136,7 +136,12 @@ if __name__ == '__main__':
             
             y_pred = clf.predict(X_test)
             report = classification_report(y_test, y_pred, output_dict=True)
+            from sklearn.metrics import balanced_accuracy_score, accuracy_score
+            b_acc = balanced_accuracy_score(y_test, y_pred)
+            acc = accuracy_score(y_test, y_pred)
             
+            print(f" Accuracy: {acc:.4f}")
+            print(f" Balanced Accuracy: {b_acc:.4f}")
             print(f" Recall for class 1: {report['1']['recall']:.4f}")
             print(f" F1-score for class 1: {report['1']['f1-score']:.4f}")
             print(f" Macro avg F1-score: {report['macro avg']['f1-score']:.4f}")

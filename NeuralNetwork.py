@@ -102,7 +102,6 @@ def train(model, device, train_loader, optimizer, epoch):
 
 
 def balanced_accuracy(y_true, y_pred):
-    """Compute balance accuracy using numpy"""
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
     classes = np.unique(y_true)
@@ -138,10 +137,15 @@ def test(model, device, test_loader):
 
     test_loss /= len(test_loader.dataset)
     b_acc = balanced_accuracy(all_targets, all_preds)
+    
+    from sklearn.metrics import classification_report
+    report = classification_report(all_targets, all_preds, output_dict=True, zero_division=0)
 
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%), Balanced Accuracy: {:.4f}\n'.format(
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.4f}%), Balanced Accuracy: {:.4f}\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset), b_acc))
+    print(f" Recall for class 1: {report['1']['recall']:.4f}")
+    print(f" F1-score for class 1: {report['1']['f1-score']:.4f}")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")

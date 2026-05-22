@@ -35,7 +35,6 @@ y_test = test_df["label"]
 
 
 def balanced_accuracy(y_true, y_pred):
-    """Compute balance accuracy using numpy"""
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
     classes = np.unique(y_true)
@@ -49,14 +48,24 @@ def balanced_accuracy(y_true, y_pred):
 
     return np.mean(recalls)
 
-#model = RandomForestClassifier(random_state=42)
-#model.fit(X_train, x_train)
+from sklearn.metrics import balanced_accuracy_score, accuracy_score
 
-model = svm.SVC(kernel="linear")
-model.fit(X_train, x_train)
+model_rf = RandomForestClassifier(random_state=42)
+model_rf.fit(X_train, x_train)
+rf_preds = model_rf.predict(Y_test)
+print("Random Forest (Nyers adatok)")
+print(f" Accuracy: {accuracy_score(y_test, rf_preds):.4f}")
+print(f" Balanced Accuracy: {balanced_accuracy_score(y_test, rf_preds):.4f}")
+report_rf = classification_report(y_test, rf_preds, output_dict=True)
+print(f" Recall for class 1: {report_rf['1']['recall']:.4f}")
+print(f" F1-score for class 1: {report_rf['1']['f1-score']:.4f}")
 
-predictions = model.predict(X_val)
-print(classification_report(x_val, predictions))
-
-b_acc = balanced_accuracy(x_val, predictions)
-print(f"Balanced Accuracy: {b_acc:.4f}")
+model_svm = svm.SVC(kernel="linear")
+model_svm.fit(X_train, x_train)
+svm_preds = model_svm.predict(Y_test)
+print("SVM (Lineáris)")
+print(f" Accuracy: {accuracy_score(y_test, svm_preds):.4f}")
+print(f" Balanced Accuracy: {balanced_accuracy_score(y_test, svm_preds):.4f}")
+report_svm = classification_report(y_test, svm_preds, output_dict=True)
+print(f" Recall for class 1: {report_svm['1']['recall']:.4f}")
+print(f" F1-score for class 1: {report_svm['1']['f1-score']:.4f}")

@@ -1,0 +1,56 @@
+=== Random Forest (Nyers adatok) ===
+TN: 2423 | FP: 16
+FN: 37 | TP: 209
+
+=== Support Vector Machine (Lineáris) ===
+TN: 2431 | FP: 8
+FN: 47 | TP: 199
+
+=== Neurális Hálózat (MLP) ===
+TN: 2430 | FP: 9
+FN: 61 | TP: 185
+
+=== Random Forest + random_oversampling ===
+TN: 2417 | FP: 22
+FN: 30 | TP: 216
+
+=== Random Forest + smote ===
+TN: 2407 | FP: 32
+FN: 27 | TP: 219
+
+=== Random Forest + borderline_smote ===
+TN: 2403 | FP: 36
+FN: 26 | TP: 220
+
+=== Random Forest + adasyn ===
+TN: 2377 | FP: 62
+FN: 25 | TP: 221
+
+=== Random Forest + tomek_links ===
+TN: 2419 | FP: 20
+FN: 31 | TP: 215
+
+=== Random Forest + cluster_centroids ===
+TN: 2330 | FP: 109
+FN: 21 | TP: 225
+
+=== Random Forest + random_undersampling ===
+TN: 2372 | FP: 67
+FN: 20 | TP: 226
+
+=== Random Forest + nearmiss ===
+TN: 1161 | FP: 1278
+FN: 16 | TP: 230
+
+=== Random Forest + condensed_nearest_neighbor ===
+TN: 2410 | FP: 29
+FN: 31 | TP: 215
+
+=== Random Forest + edited_nearest_neighbor ===
+TN: 2410 | FP: 29
+FN: 29 | TP: 217
+
+=== Random Forest + one_sided_selection ===
+TN: 2420 | FP: 19
+FN: 36 | TP: 210
+

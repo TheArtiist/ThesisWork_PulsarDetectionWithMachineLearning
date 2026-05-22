@@ -17,11 +17,9 @@ def split_dataset():
         "label"
     ]
     
-    print("Célfájl (HTRU_2.csv) betöltése...")
     dataset = pd.read_csv("htru2/HTRU_2.csv", header=None, names=column_names)
     dataFrame = clean_dataset(dataset)
     
-    print("Adathalmaz szétválasztása (70% tanító, 15% validációs, 15% teszt)...")
     train_df, temp_df = train_test_split(dataFrame, test_size=0.30, random_state=42, stratify=dataFrame["label"])
     val_df, test_df = train_test_split(temp_df, test_size=0.50, random_state=42, stratify=temp_df["label"])
     
